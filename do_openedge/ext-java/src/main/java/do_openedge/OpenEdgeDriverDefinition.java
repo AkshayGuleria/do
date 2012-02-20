@@ -1,16 +1,8 @@
 package do_openedge;
 
-/*
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import org.jruby.Ruby;
-import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.util.ByteList;
-*/
+import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Properties;
@@ -42,9 +34,33 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
     @Override
     public boolean supportsJdbcGeneratedKeys()
     {
+        //javaConn.getMetaData().supportsGetGeneratedKeys()
+        return false;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public boolean supportsConnectionPrepareStatementMethodWithGKFlag() {
         return true;
     }
 
+    /**
+     *
+     * @param connection
+     * @return
+     */
+    @Override
+    public ResultSet getGeneratedKeys(Connection connection) {
+        try {
+            return connection.prepareStatement("CALL IDENTITY()").executeQuery();
+        } catch (SQLException ex) {
+            return null;
+        }
+    }
+
+    // TODO: Verify this is true
     /**
      *
      * @return
@@ -62,7 +78,7 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
     public Properties getDefaultConnectionProperties() {
         Properties props = new Properties();
 
-        props.put("databaseName", "sports2012");
+        props.put("databaseName", "test2012");
         props.put("user", "Abe");
         return props;
     }

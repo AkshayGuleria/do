@@ -189,6 +189,9 @@ public final class Connection extends DORubyObject {
                     conn = driver.getConnectionWithEncoding(runtime, this, jdbcUri, props);
                 } else {
                     // if the driver does not use encoding, connect normally
+                    System.out.println("PROPS: " + props);
+                    System.out.println("JDBC URI: " + jdbcUri);
+                    jdbcUri = "jdbc:datadirect:openedge://192.168.1.245:13370";
                     conn = driver.getConnection(jdbcUri, props);
                 }
             }
