@@ -34,76 +34,106 @@ CONFIG.driver       = 'derby'
 CONFIG.jdbc_driver  = DataObjects::Derby::JDBC_DRIVER
 CONFIG.testsql      = "SELECT 1 FROM SYSIBM.SYSDUMMY1"
 =end
-CONFIG.uri = "jdbc:openedge://Abe@192.168.1.245:2500/sports2012"
-
-TABLE_NOT_FOUND_CODE = -20005
-SEQUENCE_NOT_FOUND_CODE = -210051
+CONFIG.uri = "jdbc:openedge://Abe@192.168.1.245:13370/test2012"
 
 module DataObjectsSpecHelpers
+
+  TABLE_NOT_FOUND_CODE = -20005
+  SEQUENCE_NOT_FOUND_CODE = -210051
+  SEQUENCE_NOT_VALID_CODE = -20170
+  TRIGGER_NOT_FOUND_CODE = -20147
+
+  def drop_table_seq_and_trig(conn, table_name, catalog="pub")
+    table_name = "#{catalog}.#{table_name}" if catalog && !catalog.empty?
+    begin
+      conn.create_command("DROP TABLE #{table_name}").execute_non_query
+    rescue DataObjects::SQLError => e
+      # OpenEdge does not support DROP TABLE IF EXISTS
+      raise e unless e.code == TABLE_NOT_FOUND_CODE
+    end
+
+    begin
+      conn.create_command("DROP SEQUENCE #{table_name}_seq").execute_non_query
+    rescue DataObjects::SQLError => e
+      raise e unless [SEQUENCE_NOT_FOUND_CODE, SEQUENCE_NOT_VALID_CODE].include?(e.code)
+    end
+
+    begin
+      conn.create_command("DROP TRIGGER #{table_name}_trigger").execute_non_query
+    rescue DataObjects::SQLError => e
+      raise e unless e.code == TRIGGER_NOT_FOUND_CODE
+    end
+  end
+
+  def create_seq_and_trigger(conn, table_name, catalog="pub")
+    table_name = "#{catalog}.#{table_name}" if catalog && !catalog.empty?
+    conn.create_command(<<-EOF).execute_non_query
+      CREATE SEQUENCE #{table_name}_seq
+      START WITH 1,
+      INCREMENT BY 1,
+      NOCYCLE
+    EOF
+
+    if catalog && !catalog.empty?
+      # Not totally clear why this is necessary, but it works
+      # Solution taken from ProKB P131308
+      conn.create_command(<<-EOF).execute_non_query
+        GRANT UPDATE ON SEQUENCE #{table_name}_seq TO #{catalog.upcase}
+      EOF
+    end
+
+    conn.create_command(<<-EOF).execute_non_query
+      CREATE TRIGGER #{table_name}_trigger
+      BEFORE INSERT ON #{table_name}
+      REFERENCING NEWROW
+      FOR EACH ROW
+      IMPORT
+      import java.sql.*;
+      BEGIN
+      Integer current_id = (Integer)NEWROW.getValue(1, INTEGER);
+      if (current_id == -1) {
+        SQLCursor next_id_query = new SQLCursor("SELECT TOP 1 #{table_name}_seq.NEXTVAL FROM SYSPROGRESS.SYSCALCTABLE");
+        next_id_query.open();
+        next_id_query.fetch();
+        Integer next_id = (Integer)next_id_query.getValue(1,INTEGER);
+        next_id_query.close();
+        NEWROW.setValue(1, next_id);
+      }
+      END
+    EOF
+  end
 
   def setup_test_environment
     conn = DataObjects::Connection.new(CONFIG.uri)
 
-    # OpenEdge does not support DROP TABLE IF EXISTS
-    begin
-      conn.create_command(<<-EOF).execute_non_query
-        DROP TABLE invoices
-      EOF
-    rescue DataObjects::SQLError => e
-      raise e unless e.code == TABLE_NOT_FOUND_CODE
-    end
+    drop_table_seq_and_trig(conn, "invoices")
+    drop_table_seq_and_trig(conn, "users")
+    drop_table_seq_and_trig(conn, "widgets")
 
-    begin
-      conn.create_command(<<-EOF).execute_non_query
-          DROP TABLE users
-      EOF
-    rescue DataObjects::SQLError => e
-      raise e unless e.code == TABLE_NOT_FOUND_CODE
-    end
-
-    begin
-      conn.create_command(<<-EOF).execute_non_query
-          DROP SEQUENCE pub.users_sequence
-      EOF
-    rescue DataObjects::SQLError => e
-      raise e unless e.code == SEQUENCE_NOT_FOUND_CODE
-    end
-
-    begin
-      conn.create_command(<<-EOF).execute_non_query
-        DROP TABLE widgets
-      EOF
-    rescue DataObjects::SQLError => e
-      raise e unless e.code == TABLE_NOT_FOUND_CODE
-    end
-
+    # Users
     conn.create_command(<<-EOF).execute_non_query
-      CREATE TABLE users (
-        id                INTEGER PRIMARY KEY,
+      CREATE TABLE pub.users (
+        id                INTEGER PRIMARY KEY DEFAULT -1,
         name              VARCHAR(200) default 'Billy',
         fired_at          TIMESTAMP
       )
     EOF
+    create_seq_and_trigger(conn, "users")
 
+    # Invoices
     conn.create_command(<<-EOF).execute_non_query
-      CREATE SEQUENCE pub.users_sequence
-        START WITH 1,
-        INCREMENT BY 1,
-        NOCYCLE
-    EOF
-
-
-    conn.create_command(<<-EOF).execute_non_query
-      CREATE TABLE invoices (
-        id                INTEGER PRIMARY KEY,
+      CREATE TABLE pub.invoices (
+        id                INTEGER PRIMARY KEY DEFAULT -1,
         invoice_number    VARCHAR(50) NOT NULL
       )
     EOF
+    create_seq_and_trigger(conn, "invoices")
 
+    # Widgets
     # TODO add image_data, ad_image, and cad_drawing back in
     conn.create_command(<<-EOF).execute_non_query
-      CREATE TABLE widgets (
-        id                INTEGER PRIMARY KEY,
+      CREATE TABLE pub.widgets (
+        id                INTEGER PRIMARY KEY DEFAULT -1,
         code              CHAR(8) DEFAULT 'A14',
         name              VARCHAR(200) DEFAULT 'Super Widget',
         shelf_location    VARCHAR(50),
@@ -122,6 +152,7 @@ module DataObjectsSpecHelpers
         release_timestamp TIMESTAMP DEFAULT '2008-02-14 00:31:31'
       )
     EOF
+    create_seq_and_trigger(conn, "widgets")
 
     # XXX: OpenEdge has no ENUM
     # status` enum('active','out of stock') NOT NULL default 'active'
@@ -129,7 +160,6 @@ module DataObjectsSpecHelpers
     1.upto(16) do |n|
       conn.create_command(<<-EOF).execute_non_query
          INSERT INTO widgets(
-          id,
           code,
           name,
           shelf_location,
@@ -139,7 +169,6 @@ module DataObjectsSpecHelpers
           super_number,
           weight)
         VALUES (
-          #{n},
           'W#{n.to_s.rjust(7,"0")}',
           'Widget #{n}',
           'A14',
