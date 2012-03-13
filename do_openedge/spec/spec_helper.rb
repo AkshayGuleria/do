@@ -69,7 +69,7 @@ module DataObjectsSpecHelpers
     table_name = "#{catalog}.#{table_name}" if catalog && !catalog.empty?
     conn.create_command(<<-EOF).execute_non_query
       CREATE SEQUENCE #{table_name}_seq
-      START WITH 1,
+      START WITH 0,
       INCREMENT BY 1,
       NOCYCLE
     EOF
