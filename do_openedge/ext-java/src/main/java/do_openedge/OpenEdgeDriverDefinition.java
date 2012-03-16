@@ -89,10 +89,24 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
     @Override
     public Properties getDefaultConnectionProperties() {
         Properties props = new Properties();
-
-        props.put("databaseName", "test2012");
-        props.put("user", "Abe");
+        // PUB is the schema that can be seen by the OpenEdge Data Dictionary
+        props.put("defaultSchema", "pub");
         return props;
+    }
+
+    /**
+     * @param connectionUri
+     * @param properties
+     * @return
+     */
+    public Properties getExtraConnectionProperties(URI connectionUri, Properties properties) {
+        String[] props = connectionUri.toString().split(";");
+        for (int i=1; i < props.length; i++) {
+            String[] p = props[i].split("=");
+            if (p.length == 2) properties.put(p[0], p[1]);
+        }
+
+        return properties;
     }
 
     /**

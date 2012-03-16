@@ -171,6 +171,7 @@ public final class Connection extends DORubyObject {
                 Properties props = driver.getDefaultConnectionProperties();
 
                 String jdbcUri = driver.getJdbcUri(connectionUri);
+                props = driver.getExtraConnectionProperties(connectionUri, props);
 
                 String userInfo = connectionUri.getUserInfo();
                 if (userInfo != null) {
@@ -183,15 +184,17 @@ public final class Connection extends DORubyObject {
                   props.put("password", password);
                 }
 
+
+                System.out.println("PROPS: " + props);
+                System.out.println("JDBC URI: " + jdbcUri);
+                jdbcUri = "jdbc:datadirect:openedge://192.168.1.245:13370";
+
                 if (driver.supportsConnectionEncodings()) {
                     // we set encoding properties, and retry on failure
                     driver.setEncodingProperty(props, encoding);
                     conn = driver.getConnectionWithEncoding(runtime, this, jdbcUri, props);
                 } else {
                     // if the driver does not use encoding, connect normally
-                    System.out.println("PROPS: " + props);
-                    System.out.println("JDBC URI: " + jdbcUri);
-                    jdbcUri = "jdbc:datadirect:openedge://192.168.1.245:13370";
                     conn = driver.getConnection(jdbcUri, props);
                 }
             }
