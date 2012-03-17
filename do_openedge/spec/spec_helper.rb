@@ -90,12 +90,12 @@ module DataObjectsSpecHelpers
       IMPORT
       import java.sql.*;
       BEGIN
-      Integer current_id = (Integer)NEWROW.getValue(1, INTEGER);
+      Long current_id = (Long)NEWROW.getValue(1, BIGINT);
       if (current_id == -1) {
         SQLCursor next_id_query = new SQLCursor("SELECT TOP 1 #{table_name}_seq.NEXTVAL FROM SYSPROGRESS.SYSCALCTABLE");
         next_id_query.open();
         next_id_query.fetch();
-        Integer next_id = (Integer)next_id_query.getValue(1,INTEGER);
+        Long next_id = (Long)next_id_query.getValue(1,BIGINT);
         next_id_query.close();
         NEWROW.setValue(1, next_id);
       }
@@ -113,7 +113,7 @@ module DataObjectsSpecHelpers
     # Users
     conn.create_command(<<-EOF).execute_non_query
       CREATE TABLE pub.users (
-        id                INTEGER PRIMARY KEY DEFAULT -1,
+        id                BIGINT PRIMARY KEY DEFAULT -1,
         name              VARCHAR(200) default 'Billy',
         fired_at          TIMESTAMP
       )
@@ -123,7 +123,7 @@ module DataObjectsSpecHelpers
     # Invoices
     conn.create_command(<<-EOF).execute_non_query
       CREATE TABLE pub.invoices (
-        id                INTEGER PRIMARY KEY DEFAULT -1,
+        id                BIGINT PRIMARY KEY DEFAULT -1,
         invoice_number    VARCHAR(50) NOT NULL
       )
     EOF
@@ -133,7 +133,7 @@ module DataObjectsSpecHelpers
     # TODO add image_data, ad_image, and cad_drawing back in
     conn.create_command(<<-EOF).execute_non_query
       CREATE TABLE pub.widgets (
-        id                INTEGER PRIMARY KEY DEFAULT -1,
+        id                BIGINT PRIMARY KEY DEFAULT -1,
         code              CHAR(8) DEFAULT 'A14',
         name              VARCHAR(200) DEFAULT 'Super Widget',
         shelf_location    VARCHAR(50),
