@@ -3,6 +3,7 @@ require 'data_objects'
 if RUBY_PLATFORM =~ /java/
   require 'do_jdbc'
   require 'java'
+  require 'date' # Required for creating native Ruby Date and DateTimes
 
   # Load the JDBC driver
   begin

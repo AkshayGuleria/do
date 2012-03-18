@@ -1,5 +1,6 @@
 package do_openedge;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,6 +9,9 @@ import java.sql.Types;
 import java.util.Properties;
 import java.net.URI;
 
+import org.jruby.Ruby;
+import org.jruby.RubyClass;
+import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 
 import data_objects.RubyType;
@@ -78,6 +82,32 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
     @Override
     public boolean supportsJdbcScrollableResultSets() {
         return true;
+    }
+
+    /**
+     *
+     * TODO
+     *
+     * @param runtime
+     * @param rs
+     * @param col
+     * @param type
+     * @return
+     * @throws SQLException
+     * @throws IOException
+     */
+    @Override
+    public IRubyObject getTypecastResultSetValue(Ruby runtime,
+            ResultSet rs, int col, RubyType type) throws SQLException,
+            IOException {
+        switch (type) {
+        case BYTE_ARRAY:
+            // TODO: How to convert this?
+            System.out.println("* " + rs.getMetaData().getColumnTypeName(col) + " = " + type.toString());
+            return runtime.getNil();
+        default:
+            return super.getTypecastResultSetValue(runtime, rs, col, type);
+        }
     }
 
     /**
