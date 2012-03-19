@@ -32,9 +32,9 @@ CONFIG              = OpenStruct.new
 CONFIG.uri          = ENV["DO_DERBY_SPEC_URI"] || "jdbc:derby:testdb;create=true"
 CONFIG.driver       = 'derby'
 CONFIG.jdbc_driver  = DataObjects::Derby::JDBC_DRIVER
-CONFIG.testsql      = "SELECT 1 FROM SYSIBM.SYSDUMMY1"
 =end
-CONFIG.uri = "jdbc:openedge://Abe@192.168.1.245:13370/test2012"
+CONFIG.testsql      = "SELECT TOP 1 * FROM SYSPROGRESS.SYSCALCTABLE"
+CONFIG.uri          = "jdbc:openedge://Abe@192.168.1.245:13370/test2012;databaseName=test2012;user=Abe"
 
 module DataObjectsSpecHelpers
 
@@ -112,34 +112,37 @@ module DataObjectsSpecHelpers
 
     # Users
     conn.create_command(<<-EOF).execute_non_query
-      CREATE TABLE pub.users (
+      CREATE TABLE users (
         id                BIGINT PRIMARY KEY DEFAULT -1,
         name              VARCHAR(200) default 'Billy',
         fired_at          TIMESTAMP
       )
     EOF
-    create_seq_and_trigger(conn, "users")
+    create_seq_and_trigger(conn, "users", "")
 
     # Invoices
     conn.create_command(<<-EOF).execute_non_query
-      CREATE TABLE pub.invoices (
+      CREATE TABLE invoices (
         id                BIGINT PRIMARY KEY DEFAULT -1,
         invoice_number    VARCHAR(50) NOT NULL
       )
     EOF
-    create_seq_and_trigger(conn, "invoices")
+    create_seq_and_trigger(conn, "invoices", "")
 
     # Widgets
-    # TODO add image_data, ad_image, and cad_drawing back in
     conn.create_command(<<-EOF).execute_non_query
-      CREATE TABLE pub.widgets (
+      CREATE TABLE widgets (
         id                BIGINT PRIMARY KEY DEFAULT -1,
         code              CHAR(8) DEFAULT 'A14',
         name              VARCHAR(200) DEFAULT 'Super Widget',
-        shelf_location    VARCHAR(50),
-        description       LVARCHAR,
-        ad_description    LVARCHAR,
-        whitepaper_text   LVARCHAR,
+        shelf_location    VARCHAR(4000),
+        description       VARCHAR(4000),
+        image_data        BLOB,
+        ad_description    VARCHAR(4000),
+        ad_image          BLOB,
+        whitepaper_text   CLOB,
+        class_name        VARCHAR(4000),
+        cad_drawing       BLOB,
         flags             BIT DEFAULT 0,
         number_in_stock   SMALLINT DEFAULT 500,
         number_sold       INTEGER DEFAULT 0,
@@ -152,32 +155,32 @@ module DataObjectsSpecHelpers
         release_timestamp TIMESTAMP DEFAULT '2008-02-14 00:31:31'
       )
     EOF
-    create_seq_and_trigger(conn, "widgets")
+    create_seq_and_trigger(conn, "widgets", "")
 
     # XXX: OpenEdge has no ENUM
     # status` enum('active','out of stock') NOT NULL default 'active'
 
+    command = conn.create_command(<<-EOF)
+      INSERT INTO widgets(
+        code,
+        name,
+        shelf_location,
+        description,
+        ad_description,
+        super_number,
+        weight)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    EOF
+
     1.upto(16) do |n|
-      conn.create_command(<<-EOF).execute_non_query
-         INSERT INTO widgets(
-          code,
-          name,
-          shelf_location,
-          description,
-          ad_description,
-          whitepaper_text,
-          super_number,
-          weight)
-        VALUES (
-          'W#{n.to_s.rjust(7,"0")}',
-          'Widget #{n}',
-          'A14',
-          'This is a description',
-          'Buy this product now!',
-          'String',
-          1234,
-          13.4)
-      EOF
+      command.execute_non_query(
+        "W#{n.to_s.rjust(7,'0')}",
+        "Widget #{n}",
+        'A14',
+        'This is a description',
+        'Buy this product now!',
+        1234,
+        13.4)
     end
 
     conn.create_command(<<-EOF).execute_non_query
