@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
@@ -154,6 +155,16 @@ public interface DriverDefinition {
      * @return
      */
     public ResultSet getGeneratedKeys(Connection connection);
+
+    /**
+     * Same as above, except with extra parameters (needed by the OpenEdge driver)
+     *
+     * @param connection
+     * @param ps
+     * @param sqlText
+     * @return
+     */
+    public ResultSet getGeneratedKeys(Connection connection, PreparedStatement ps, String sqlText) throws SQLException;
 
     /**
      * A default list of properties for a connection for a driver.

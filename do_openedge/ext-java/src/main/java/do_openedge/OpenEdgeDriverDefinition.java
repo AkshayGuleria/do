@@ -2,11 +2,15 @@ package do_openedge;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.ResultSetMetaData;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.net.URI;
 
 import org.jruby.Ruby;
@@ -61,13 +65,27 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
 
     /**
      *
-     * TODO - see how Oracle driver does this w/ its sequences
+     * Needs to parse raw SQL text due to the driver returning null for
+     * ps.getMetaData() on INSERT statements (SELECT queries seem to work).
      *
      * @param connection
+     * @param ps
+     * @param sqlText
      * @return
      */
     @Override
-    public ResultSet getGeneratedKeys(Connection connection) {
+    public ResultSet getGeneratedKeys(Connection connection, PreparedStatement ps, String sqlText) throws SQLException {
+        Pattern p = Pattern.compile("^\\s*INSERT.+INTO\\s+([^(]+)[\\s(]*", Pattern.CASE_INSENSITIVE);
+        Matcher m = p.matcher(sqlText);
+        if (m.find()) {
+            if (m.groupCount() > 0) {
+                String tableName = m.group(1).trim();
+                // Using plain Statement as table names can't be bound like '?' parameters in PreparedStatements :(
+                Statement s = connection.createStatement();
+                ResultSet result = s.executeQuery("SELECT TOP 1 " + tableName + "_seq.CURRVAL FROM SYSPROGRESS.SYSCALCTABLE");
+                return result;
+            }
+        }
         return null;
     }
 

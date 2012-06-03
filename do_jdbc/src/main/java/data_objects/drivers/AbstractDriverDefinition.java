@@ -12,6 +12,7 @@ import java.sql.Date;
 import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
@@ -557,6 +558,17 @@ public abstract class AbstractDriverDefinition implements DriverDefinition {
      * @return
      */
     public ResultSet getGeneratedKeys(Connection connection) {
+        return null;
+    }
+
+    /**
+     *
+     * @param connection
+     * @param ps
+     * @param sqlText
+     * @return
+     */
+    public ResultSet getGeneratedKeys(Connection connection, PreparedStatement ps, String sqlText) throws SQLException{
         return null;
     }
 
