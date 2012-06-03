@@ -41,11 +41,13 @@ def create_seq_and_trigger(conn, table_name, catalog="pub")
     NOCYCLE
   EOF
 
-  if catalog && !catalog.empty?
-    # Not totally clear why this is necessary, but it works
-    # Solution taken from ProKB P131308
+  # Not opening up sequence permissions causes weird errors.
+  # See ProKB P131308, P10499 for examples
+  # Also, GRANT ALL doesn't work on sequences; it raises error 12666 "invalid sequence name"
+  # (probably because some table operations don't apply to sequences)
+  %w{SELECT UPDATE}.each do |perm|
     conn.create_command(<<-EOF).execute_non_query
-      GRANT UPDATE ON SEQUENCE #{table_name}_seq TO #{catalog.upcase}
+      GRANT #{perm} ON SEQUENCE #{table_name}_seq TO PUBLIC
     EOF
   end
 
