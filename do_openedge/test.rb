@@ -20,7 +20,7 @@ def drop_table_seq_and_trig(conn, table_name, catalog="pub")
   end
 
   begin
-    conn.create_command("DROP SEQUENCE #{table_name}_seq").execute_non_query
+    conn.create_command("DROP SEQUENCE #{table_name}_id_seq").execute_non_query
   rescue DataObjects::SQLError => e
     raise e unless [SEQUENCE_NOT_FOUND_CODE, SEQUENCE_NOT_VALID_CODE].include?(e.code)
   end
@@ -35,7 +35,7 @@ end
 def create_seq_and_trigger(conn, table_name, catalog="pub")
   table_name = "#{catalog}.#{table_name}" if catalog && !catalog.empty?
   conn.create_command(<<-EOF).execute_non_query
-    CREATE SEQUENCE #{table_name}_seq
+    CREATE SEQUENCE #{table_name}_id_seq
     START WITH 0,
     INCREMENT BY 1,
     NOCYCLE
@@ -47,7 +47,7 @@ def create_seq_and_trigger(conn, table_name, catalog="pub")
   # (probably because some table operations don't apply to sequences)
   %w{SELECT UPDATE}.each do |perm|
     conn.create_command(<<-EOF).execute_non_query
-      GRANT #{perm} ON SEQUENCE #{table_name}_seq TO PUBLIC
+      GRANT #{perm} ON SEQUENCE #{table_name}_id_seq TO PUBLIC
     EOF
   end
 
@@ -61,7 +61,7 @@ def create_seq_and_trigger(conn, table_name, catalog="pub")
     BEGIN
     Long current_id = (Long)NEWROW.getValue(1, BIGINT);
     if (current_id == -1) {
-      SQLCursor next_id_query = new SQLCursor("SELECT TOP 1 #{table_name}_seq.NEXTVAL FROM SYSPROGRESS.SYSCALCTABLE");
+      SQLCursor next_id_query = new SQLCursor("SELECT TOP 1 #{table_name}_id_seq.NEXTVAL FROM SYSPROGRESS.SYSCALCTABLE");
       next_id_query.open();
       next_id_query.fetch();
       Long next_id = (Long)next_id_query.getValue(1,BIGINT);

@@ -82,7 +82,7 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
                 String tableName = m.group(1).trim();
                 // Using plain Statement as table names can't be bound like '?' parameters in PreparedStatements :(
                 Statement s = connection.createStatement();
-                ResultSet result = s.executeQuery("SELECT TOP 1 " + tableName + "_seq.CURRVAL FROM SYSPROGRESS.SYSCALCTABLE");
+                ResultSet result = s.executeQuery("SELECT TOP 1 " + tableName + "_id_seq.CURRVAL FROM SYSPROGRESS.SYSCALCTABLE");
                 return result;
             }
         }
