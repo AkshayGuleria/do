@@ -143,11 +143,13 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
     }
 
     /**
+     * This function is needed because OpenEdge needs certain
+     * Username/password should be set to the following properties: 'user' and 'password'
+     *
      * @param connectionUri
-     * @param properties
      * @return
      */
-    public Properties getExtraConnectionProperties(URI connectionUri, Properties properties) {
+    public Properties getExtraConnectionProperties(URI connectionUri) {
         String[] props = connectionUri.toString().split(";");
         for (int i=1; i < props.length; i++) {
             String[] p = props[i].split("=");
@@ -159,7 +161,33 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
 
     /**
      *
-     * TODO
+     * This is needed to translate OpenEdge's non-JDBC style URIs, which look like this:
+     * jdbc:datadirect:openedge://host:port;databaseName=db_name;defaultSchema=schema_name;statementCacheSize=Cachesize
+     * into actual JDBC-style URIs of the form
+     * jdbc:datadirect:openedge://host:port/db_name?defaultSchema=schema_name&statementCacheSize=Cachesize
+     * @param connection_uri
+     * @return
+     * @throws URISyntaxException
+     * @throws UnsupportedEncodingException
+     */
+    @SuppressWarnings("unchecked")
+    public URI parseConnectionURI(IRubyObject connection_uri)
+            throws URISyntaxException, UnsupportedEncodingException {
+        if ("DataObjects::URI".equals(connection_uri.getType().getName())) {
+            // Handle DataObjects::URI objects here
+            return super.parseConnectionURI(connection_uri);
+        } else {
+            // Handle JDBC strings here
+            //connUriStr.split("://");
+        }
+    }
+
+    /**
+     *
+     * This is needed to translate from the JDBC-style URI into the proprietary
+     * mess that OpenEdge requires (see parseConnectionURI for opposite conversion)
+     * XX: Pull out query parameters and rely on getExtraConnectionProperties setting them?
+     *     Or is getExtraConnectionProperties even really needed anymore?
      *
      * @param connectionUri
      * @return
