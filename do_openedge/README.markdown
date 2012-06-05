@@ -4,26 +4,40 @@
 
 ## Description
 
-A OpenEdge driver for DataObjects.
+An OpenEdge driver for DataObjects.
 
 ## Features/Problems
 
-This driver implements the DataObjects API for the OpenEdge relational database.
+This driver implements the DataObjects API for the Progress OpenEdge relational database.
 This driver is currently provided only for JRuby.
 
 ## Synopsis
 
 An example of usage:
 
-    @connection = DataObjects::Connection.new("derby://employees")
-    @reader = @connection.create_command('SELECT * FROM PUB.State').execute_reader
+    @connection = DataObjects::Connection.new("openedge://localhost:4000/sports2000")
+    @reader = @connection.create_command('SELECT * FROM State').execute_reader
     @reader.next!
 
 The `Connection` constructor should be passed either a DataObjects-style URL or
 JDBC-style URL:
 
-    derby://employees
-    jdbc:derby:employees;create=true
+    openedge://user:password@host:port/database?option1=value1&option2=value2
+    jdbc:datadirect:openedge://host:port/database?user=<value>&password=<value>
+
+Note that the DataDirect proprietary-style JDBC URI tokenized with `;`s:
+
+    jdbc:datadirect:openedge://host:port;databaseName=database;user=<value>;password=<value>
+
+is *NOT* supported (pull requests accepted).
+
+## Known Issues
+
+### 10.2B
+
+ * DECIMAL/NUMERIC SQL types are truncating all digits after the decimal point.
+   According to ProKB #P187898, it appears to be a regression bug in the JDBC
+   driver. This is causing one of the BigDecimal specs to fail.
 
 ## Requirements
 
@@ -67,6 +81,20 @@ To run specs without compiling extensions first:
 To run individual specs:
 
     jruby -S rake spec SPEC=spec/connection_spec.rb
+
+### Spec data set-up
+
+The specs require an empty database to populate with data to run
+tests against.  Here are some commands to be ran from `proenv` to
+create the database to be used for testing:
+
+  prodb test empty
+  proutil test -C convchar convert utf-8
+  sql_env
+  proserve test -S 4000 -cpinternal utf-8 -cpstream utf-8
+
+I don't think that the SQL engine is affected by the codepage
+settings, but it doesn't hurt to be careful.
 
 ## License
 
