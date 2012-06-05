@@ -25,7 +25,7 @@ An example of usage:
 
     @connection = DataObjects::Connection.new("openedge://localhost:4000/sports2000")
     @reader = @connection.create_command('SELECT * FROM State').execute_reader
-    @reader.next!
+    @reader.next! && @reader.values
 
 The `Connection` constructor should be passed either a DataObjects-style URI or
 JDBC-style URI:
@@ -88,10 +88,10 @@ The specs require an empty database to populate with data to run
 tests against.  Here are some commands to be ran from `proenv` to
 create the database to be used for testing:
 
-  prodb test empty
-  proutil test -C convchar convert utf-8
-  sql_env
-  proserve test -S 4000 -cpinternal utf-8 -cpstream utf-8
+    prodb test empty
+    proutil test -C convchar convert utf-8
+    sql_env
+    proserve test -S 4000 -cpinternal utf-8 -cpstream utf-8
 
 I don't think that the SQL engine is affected by the codepage
 settings, but it doesn't hurt to be careful.
