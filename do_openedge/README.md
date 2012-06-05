@@ -11,6 +11,14 @@ An OpenEdge driver for DataObjects.
 This driver implements the DataObjects API for the Progress OpenEdge relational database.
 This driver is currently provided only for JRuby.
 
+### Known Issues
+
+#### Version 10.2B
+
+ * DECIMAL/NUMERIC SQL types are truncating all digits after the decimal point.
+   According to ProKB #P187898, it appears to be a regression bug in the JDBC
+   driver. This is causing one of the BigDecimal specs to fail.
+
 ## Synopsis
 
 An example of usage:
@@ -30,14 +38,6 @@ Note that the DataDirect proprietary-style JDBC URI tokenized with `;`s:
     jdbc:datadirect:openedge://host:port;databaseName=database;user=<value>;password=<value>
 
 is *NOT* supported (pull requests accepted).
-
-## Known Issues
-
-### 10.2B
-
- * DECIMAL/NUMERIC SQL types are truncating all digits after the decimal point.
-   According to ProKB #P187898, it appears to be a regression bug in the JDBC
-   driver. This is causing one of the BigDecimal specs to fail.
 
 ## Requirements
 
