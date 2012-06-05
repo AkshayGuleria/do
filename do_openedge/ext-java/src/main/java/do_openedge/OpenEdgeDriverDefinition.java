@@ -235,16 +235,6 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
      */
     @Override
     public String getJdbcUri(URI connectionUri) {
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        System.out.println("scheme:   " + connectionUri.getScheme());
-        System.out.println("userInfo: " + connectionUri.getUserInfo());
-        System.out.println("host:     " + connectionUri.getHost());
-        System.out.println("port:     " + connectionUri.getPort());
-        System.out.println("path:     " + connectionUri.getPath());
-        System.out.println("query:    " + connectionUri.getQuery());
-        System.out.println("fragment: " + connectionUri.getFragment());
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
         // Create the string 'jdbc:datadirect:openedge'
         String jdbcPrefix = "jdbc:" + JDBC_URI_SCHEME.replaceAll("\\.", ":");
 
@@ -266,9 +256,6 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
             }
         }
 
-        System.out.println("about to send" + jdbcUri);
-
         return jdbcUri;
     }
-
 }
