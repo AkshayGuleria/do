@@ -98,7 +98,7 @@ settings, but it doesn't hurt to be careful.
 
 ## License
 
-This code is licensed under an **MIT (X11) License**. Please see the
+This code is licensed under an **MIT License**. Please see the
 accompanying `LICENSE` file.
 
 [1]: http://knowledgebase.progress.com/articles/Article/P187898
