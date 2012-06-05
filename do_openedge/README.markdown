@@ -27,8 +27,8 @@ An example of usage:
     @reader = @connection.create_command('SELECT * FROM State').execute_reader
     @reader.next!
 
-The `Connection` constructor should be passed either a DataObjects-style URL or
-JDBC-style URL:
+The `Connection` constructor should be passed either a DataObjects-style URI or
+JDBC-style URI:
 
     openedge://user:password@host:port/database?option1=value1&option2=value2
     jdbc:datadirect:openedge://host:port/database?user=<value>&password=<value>
