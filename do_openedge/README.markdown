@@ -37,7 +37,7 @@ Note that the DataDirect proprietary-style JDBC URI tokenized with `;`s:
 
     jdbc:datadirect:openedge://host:port;databaseName=database;user=<value>;password=<value>
 
-is *NOT* supported (pull requests accepted).
+are **NOT** supported (pull requests accepted).
 
 ## Requirements
 
