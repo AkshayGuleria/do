@@ -15,8 +15,8 @@ This driver is currently provided only for JRuby.
 
 #### Version 10.2B
 
- * DECIMAL/NUMERIC SQL types truncate all digits after the decimal point.
-   According to ProKB #P187898, it appears to be a regression bug in the JDBC
+ * `DECIMAL`/`NUMERIC` SQL types truncate all digits after the decimal point.
+   According to [ProKB #P187898][1], it appears to be a regression bug in the JDBC
    driver. This is causing one of the BigDecimal specs to fail.
 
 ## Synopsis
@@ -100,3 +100,5 @@ settings, but it doesn't hurt to be careful.
 
 This code is licensed under an **MIT (X11) License**. Please see the
 accompanying `LICENSE` file.
+
+[1]: http://knowledgebase.progress.com/articles/Article/P187898
