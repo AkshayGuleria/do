@@ -28,13 +28,18 @@ at_exit { DataObjects.logger.flush }
 
 
 CONFIG              = OpenStruct.new
-=begin
-CONFIG.uri          = ENV["DO_DERBY_SPEC_URI"] || "jdbc:derby:testdb;create=true"
-CONFIG.driver       = 'derby'
-CONFIG.jdbc_driver  = DataObjects::Derby::JDBC_DRIVER
-=end
-CONFIG.testsql      = "SELECT TOP 1 * FROM SYSPROGRESS.SYSCALCTABLE"
-CONFIG.uri          = "jdbc:openedge://Abe@192.168.1.245:13370/test2012;databaseName=test2012;user=Abe"
+CONFIG.scheme       = 'openedge'
+CONFIG.driver       = 'openedge'
+CONFIG.jdbc_driver  = DataObjects::Openedge.const_get('JDBC_DRIVER') rescue nil
+CONFIG.user         = ENV['DO_OPENEDGE_USER'] || 'Abe'
+CONFIG.pass         = ENV['DO_OPENEDGE_PASS'] || ''
+CONFIG.host         = ENV['DO_OPENEDGE_HOST'] || '192.168.1.243'
+CONFIG.port         = ENV['DO_OPENEDGE_PORT'] || '13370'
+CONFIG.database     = ENV['DO_OPENEDGE_DATABASE'] || 'test2012'
+# Result of this query must be a value of "1":
+CONFIG.testsql      = "SELECT SIGN(1) FROM SYSPROGRESS.SYSCALCTABLE"
+CONFIG.uri          = ENV["DO_OPENEDGE_SPEC_URI"] ||"#{CONFIG.scheme}://#{CONFIG.user}:#{CONFIG.pass}@#{CONFIG.host}:#{CONFIG.port}/#{CONFIG.database}"
+CONFIG.jdbc_uri     = "jdbc:openedge://#{CONFIG.host}:#{CONFIG.port}/#{CONFIG.database}?user=#{CONFIG.user}&password=#{CONFIG.pass}"
 
 module DataObjectsSpecHelpers
 

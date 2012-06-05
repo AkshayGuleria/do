@@ -116,6 +116,14 @@ public final class Connection extends DORubyObject {
             //XXX Nothing to close
             throw runtime.newArgumentError("Unsupported Encoding in Query Parameters" + ex);
         }
+        System.out.println("scheme:   " + connectionUri.getScheme());
+        System.out.println("userInfo: " + connectionUri.getUserInfo());
+        System.out.println("host:     " + connectionUri.getHost());
+        System.out.println("port:     " + connectionUri.getPort());
+        System.out.println("path:     " + connectionUri.getPath());
+        System.out.println("query:    " + connectionUri.getQuery());
+        System.out.println("fragment: " + connectionUri.getFragment());
+        System.out.println("============== \n\n");
 
         // Normally, a database path must be specified. However, we should only
         // throw this error for opaque URIs - so URIs like jdbc:h2:mem should work.
@@ -170,8 +178,11 @@ public final class Connection extends DORubyObject {
             } else {
                 Properties props = driver.getDefaultConnectionProperties();
 
+
                 String jdbcUri = driver.getJdbcUri(connectionUri);
-                props = driver.getExtraConnectionProperties(connectionUri, props);
+                Properties extraProps = driver.getExtraConnectionProperties(connectionUri);
+                if (extraProps != null)
+                    props.putAll(extraProps);
 
                 String userInfo = connectionUri.getUserInfo();
                 if (userInfo != null) {
@@ -183,11 +194,6 @@ public final class Connection extends DORubyObject {
                   props.put("user", username);
                   props.put("password", password);
                 }
-
-
-                System.out.println("PROPS: " + props);
-                System.out.println("JDBC URI: " + jdbcUri);
-                jdbcUri = "jdbc:datadirect:openedge://192.168.1.245:13370";
 
                 if (driver.supportsConnectionEncodings()) {
                     // we set encoding properties, and retry on failure

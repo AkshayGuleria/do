@@ -19,5 +19,5 @@ describe DataObjects::Openedge::Connection do
   it_should_behave_like 'a Connection'
   #it_should_behave_like 'a Connection with authentication support'
   it_should_behave_like 'a Connection with JDBC URL support'
-  it_should_behave_like 'a Connection via JDNI'
+  #it_should_behave_like 'a Connection via JDNI'
 end

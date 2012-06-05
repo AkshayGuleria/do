@@ -1,6 +1,7 @@
 package do_openedge;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.ResultSetMetaData;
 import java.sql.PreparedStatement;
@@ -8,6 +9,7 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -150,6 +152,7 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
      * @return
      */
     public Properties getExtraConnectionProperties(URI connectionUri) {
+        Properties properties = new Properties();
         String[] props = connectionUri.toString().split(";");
         for (int i=1; i < props.length; i++) {
             String[] p = props[i].split("=");
@@ -165,6 +168,9 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
      * jdbc:datadirect:openedge://host:port;databaseName=db_name;defaultSchema=schema_name;statementCacheSize=Cachesize
      * into actual JDBC-style URIs of the form
      * jdbc:datadirect:openedge://host:port/db_name?defaultSchema=schema_name&statementCacheSize=Cachesize
+     * Note that DataObjects-style URIs also come through this method, which take the form of
+     * scheme://user:password@host:port/path#fragment
+     *
      * @param connection_uri
      * @return
      * @throws URISyntaxException
@@ -174,11 +180,48 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
     public URI parseConnectionURI(IRubyObject connection_uri)
             throws URISyntaxException, UnsupportedEncodingException {
         if ("DataObjects::URI".equals(connection_uri.getType().getName())) {
-            // Handle DataObjects::URI objects here
+            // DataObjects::URI get parsed by default adapter just fine
             return super.parseConnectionURI(connection_uri);
         } else {
             // Handle JDBC strings here
-            //connUriStr.split("://");
+            String connUriStr = connection_uri.asJavaString();
+            String postScheme = connUriStr.split("://")[1];
+            URI connectionUri = new URI(JDBC_URI_SCHEME + "://" + postScheme);
+
+            // Filter the query string
+            String user = "";
+            String password = "";
+            String query = null;
+            if (connectionUri.getQuery() != null) {
+                String[] parts = connectionUri.getQuery().split("&");
+                for (int i=0; i < parts.length; i++) {
+                    if (parts[i].toLowerCase().startsWith("user")) {
+                        String userParts[] = parts[i].split("=");
+                        if ((userParts.length) > 1)
+                            user = userParts[1];
+                    } else if (parts[i].toLowerCase().startsWith("password")) {
+                        String passParts[] = parts[i].split("=");
+                        if ((passParts.length) > 1)
+                            password = passParts[1];
+                    } else {
+                        if (query == null)
+                            query = "?" + parts[i];
+                        else
+                            query += "&" + parts[i];
+                    }
+                }
+            }
+            String userInfo = null;
+            if (user != "") {
+                userInfo = user + ":" + password;
+            }
+            return new URI(connectionUri.getScheme(),
+                           userInfo,
+                           connectionUri.getHost(),
+                           connectionUri.getPort(),
+                           connectionUri.getPath(),
+                           connectionUri.getQuery(),
+                           connectionUri.getFragment());
         }
     }
 
@@ -186,25 +229,46 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
      *
      * This is needed to translate from the JDBC-style URI into the proprietary
      * mess that OpenEdge requires (see parseConnectionURI for opposite conversion)
-     * XX: Pull out query parameters and rely on getExtraConnectionProperties setting them?
-     *     Or is getExtraConnectionProperties even really needed anymore?
      *
      * @param connectionUri
      * @return
      */
     @Override
     public String getJdbcUri(URI connectionUri) {
-      String jdbcUri = connectionUri.toString();
-      System.out.println("JDBC STARTING URI IS " + jdbcUri);
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        System.out.println("scheme:   " + connectionUri.getScheme());
+        System.out.println("userInfo: " + connectionUri.getUserInfo());
+        System.out.println("host:     " + connectionUri.getHost());
+        System.out.println("port:     " + connectionUri.getPort());
+        System.out.println("path:     " + connectionUri.getPath());
+        System.out.println("query:    " + connectionUri.getQuery());
+        System.out.println("fragment: " + connectionUri.getFragment());
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
-      // Replace . with : in scheme name - necessary for OpenEdge scheme datadirect:openedge
-      // : cannot be used in JDBC_URI_SCHEME as then it is identified as opaque URI
-      jdbcUri = jdbcUri.replaceFirst("^([a-z]+)(\\.)", "$1:");
+        // Create the string 'jdbc:datadirect:openedge'
+        String jdbcPrefix = "jdbc:" + JDBC_URI_SCHEME.replaceAll("\\.", ":");
 
-      if (!jdbcUri.startsWith("jdbc:")) {
-          jdbcUri = "jdbc:" + jdbcUri;
-      }
-      return jdbcUri;
+        String jdbcUri = jdbcPrefix + "://" + connectionUri.getHost() + ":" + connectionUri.getPort();
+
+        String dbName = connectionUri.getPath();
+        if (dbName != null) {
+            dbName = dbName.replaceFirst("^\\/", "");
+            jdbcUri += ";databasename=" + dbName;
+        }
+
+        // Iterate through each piece of the query string...
+        if (connectionUri.getQuery() != null) {
+            String[] parts = connectionUri.getQuery().split("&");
+            for (int i=0; i < parts.length; i++) {
+                if (!parts[i].toLowerCase().startsWith("user") && !parts[i].toLowerCase().startsWith("password")) {
+                    jdbcUri += ";" + parts[i];
+                }
+            }
+        }
+
+        System.out.println("about to send" + jdbcUri);
+
+        return jdbcUri;
     }
 
 }
