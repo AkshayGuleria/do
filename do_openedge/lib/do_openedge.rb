@@ -5,22 +5,22 @@ if RUBY_PLATFORM =~ /java/
   require 'java'
   require 'date' # Required for creating native Ruby Date and DateTimes
 
-  # Load the JDBC driver
   begin
-    require 'openedge.jar'
-    require 'pool.jar'
+    java.lang.Thread.currentThread.getContextClassLoader().loadClass(DataObjects::Openedge::JDBC_DRIVER, true)
   rescue
-    raise LoadError, "openedge.jar and pool.jar must be in your $CLASSPATH!"
+    # Load the JDBC driver
+    begin
+      require 'openedge.jar'
+      require 'pool.jar'
+    rescue
+      raise LoadError, "openedge.jar and pool.jar must be in your $CLASSPATH!"
+    end
   end
 
   module DataObjects
     module Openedge
       JDBC_DRIVER = 'com.ddtek.jdbc.openedge.OpenEdgeDriver'
     end
-  end
-
-  begin
-    java.lang.Thread.currentThread.getContextClassLoader().loadClass(DataObjects::Openedge::JDBC_DRIVER, true)
   end
 
   require 'do_openedge/do_openedge'    # the Java extension for this DO driver
