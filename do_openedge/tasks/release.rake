@@ -6,7 +6,7 @@ end
 
 desc 'Release all gems (native, binaries for JRuby and Windows)'
 task :release_all => :build_all do
-  Dir["pkg/do_openedge-#{DataObjects::Derby::VERSION}*.gem"].each do |gem_path|
+  Dir["pkg/do_openedge-#{DataObjects::Openedge::VERSION}*.gem"].each do |gem_path|
     command = "gem push #{gem_path}"
     puts "Executing #{command.inspect}:"
     sh command
