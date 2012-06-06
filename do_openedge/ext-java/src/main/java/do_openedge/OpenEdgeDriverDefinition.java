@@ -118,24 +118,6 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
     }
 
     /**
-     * This function is needed because OpenEdge needs certain
-     * Username/password should be set to the following properties: 'user' and 'password'
-     *
-     * @param connectionUri
-     * @return
-     */
-    public Properties getExtraConnectionProperties(URI connectionUri) {
-        Properties properties = new Properties();
-        String[] props = connectionUri.toString().split(";");
-        for (int i=1; i < props.length; i++) {
-            String[] p = props[i].split("=");
-            if (p.length == 2) properties.put(p[0], p[1]);
-        }
-
-        return properties;
-    }
-
-    /**
      *
      * This is needed to translate OpenEdge's funky JDBC URI
      *

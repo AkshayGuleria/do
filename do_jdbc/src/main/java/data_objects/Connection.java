@@ -170,11 +170,7 @@ public final class Connection extends DORubyObject {
             } else {
                 Properties props = driver.getDefaultConnectionProperties();
 
-
                 String jdbcUri = driver.getJdbcUri(connectionUri);
-                Properties extraProps = driver.getExtraConnectionProperties(connectionUri);
-                if (extraProps != null)
-                    props.putAll(extraProps);
 
                 String userInfo = connectionUri.getUserInfo();
                 if (userInfo != null) {

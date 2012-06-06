@@ -581,14 +581,6 @@ public abstract class AbstractDriverDefinition implements DriverDefinition {
     }
 
     /**
-     * @param connectionUri
-     * @return
-     */
-    public Properties getExtraConnectionProperties(URI connectionUri) {
-        return null;
-    }
-
-    /**
      *
      * @param connectionUri
      * @return

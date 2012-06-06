@@ -174,14 +174,6 @@ public interface DriverDefinition {
     public Properties getDefaultConnectionProperties();
 
     /**
-     * Extra properties that should be set based on the connection string.
-     *
-     * @param connectionUri
-     * @return
-     */
-    public Properties getExtraConnectionProperties(URI connectionUri);
-
-    /**
      * Return database specific JDBC connection string from DataObjects URI
      *
      * @param connectionUri
