@@ -14,8 +14,10 @@ This driver is currently provided only for JRuby.
 ### Known Issues
 
  * `BLOB`/`CLOB` fields cannot be used as predicates or arithmetic/comparison
-   operators.  In other words, you cannot query rows based on their value. See
-   [ProKB P91964][0] for more info. This causes one ByteArray spec to fail.
+   operators.  In other words, you cannot query rows based on their value. You
+   will have to query the rows using a different column value (there is no
+   issue doing reads or writes with `BLOB`/`CLOB` fields). See [ProKB P91964][0]
+   for more info. This causes one ByteArray spec to fail.
  * The 10.2B JDBC driver causes `DECIMAL`/`NUMERIC` SQL types to round up to the
    nearest integer and then truncate all digits after the decimal point. According
    to [ProKB P187898][1], it appears to be a regression bug in the JDBC driver.
