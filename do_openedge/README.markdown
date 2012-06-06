@@ -15,9 +15,10 @@ This driver is currently provided only for JRuby.
 
 #### Version 10.2B
 
- * `DECIMAL`/`NUMERIC` SQL types truncate all digits after the decimal point.
-   According to [ProKB #P187898][1], it appears to be a regression bug in the JDBC
-   driver. This is causing one of the BigDecimal specs to fail.
+ * `BLOB`/`CLOB` fields cannot be 
+ * `DECIMAL`/`NUMERIC` SQL types round up and then truncate all digits after the
+   decimal point. According to [ProKB #P187898][1], it appears to be a regression
+   bug in the JDBC driver. This is causing one of the BigDecimal specs to fail.
 
 ## Synopsis
 
@@ -82,19 +83,27 @@ To run individual specs:
 
     jruby -S rake spec SPEC=spec/connection_spec.rb
 
-### Spec data set-up
+Note that the *typecast tests must be run individually*. There is apparently
+some type of concurrency issue when trying to run many at the same time.
+The error that the JDBC driver returns when this happens (on 10.2B) is:
 
-The specs require an empty database to populate with data to run
-tests against.  Here are some commands to be ran from `proenv` to
-create the database to be used for testing:
+    [DataDirect][OpenEdge JDBC Driver][OpenEdge] Failure to acquire exclusive schema lock for DDL operation. (7872)
+
+### Spec data setup
+
+The specs require an empty database to use for running tests against
+(the database will be written/read from by the tests). Here are
+some commands to be ran from `proenv` to create and bootstrap a
+database that can be used for testing (note the use of UTF-8,
+which is required for proper multibyte string support):
 
     prodb test empty
     proutil test -C convchar convert utf-8
     sql_env
     proserve test -S 4000 -cpinternal utf-8 -cpstream utf-8
 
-I don't think that the SQL engine is affected by the codepage
-settings, but it doesn't hurt to be careful.
+Note that I think the SQL engine is unaffected by the codepage
+parameters, but it doesn't hurt to be careful.
 
 ## License
 
