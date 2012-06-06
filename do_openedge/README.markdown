@@ -21,7 +21,7 @@ This driver is currently provided only for JRuby.
  * The 10.2B JDBC driver causes `DECIMAL`/`NUMERIC` SQL types to round up to the
    nearest integer and then truncate all digits after the decimal point. According
    to [ProKB P187898][1], it appears to be a regression bug in the JDBC driver.
-   This is causing one of the BigDecimal specs to fail.
+   This causes one of the BigDecimal specs to fail.
 
 ## Synopsis
 
