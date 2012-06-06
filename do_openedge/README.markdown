@@ -13,8 +13,6 @@ This driver is currently provided only for JRuby.
 
 ### Known Issues
 
-#### Version 10.2B
-
  * `BLOB`/`CLOB` fields cannot be used as predicates or arithmetic/comparison
    operators.  In other words, you cannot query rows based on their value. See
    [ProKB P91964][0] for more info. This causes one ByteArray spec to fail.
