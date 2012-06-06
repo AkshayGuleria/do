@@ -8,7 +8,7 @@ begin
 
   Rake::JavaExtensionTask.new('do_openedge', gemspec) do |ext|
     ext.ext_dir   = 'ext-java/src/main/java'
-    ext.lib_dir   = 'lib/do_openedge'
+    ext.lib_dir   = "lib/#{gemspec.name}"
     ext.debug     = ENV.has_key?('DO_JAVA_DEBUG') && ENV['DO_JAVA_DEBUG']
     ext.classpath = '../do_jdbc/lib/do_jdbc_internal.jar'
   end
