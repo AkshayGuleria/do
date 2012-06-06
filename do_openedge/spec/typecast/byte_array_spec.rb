@@ -4,6 +4,5 @@ require File.expand_path(File.join(File.dirname(__FILE__), '..', 'spec_helper'))
 require 'data_objects/spec/shared/typecast/byte_array_spec'
 
 describe 'DataObjects::Openedge with ByteArray' do
-  # We need to switch to using parameter binding for this to work with Derby
-  # it_should_behave_like 'supporting ByteArray'
+  it_should_behave_like 'supporting ByteArray'
 end

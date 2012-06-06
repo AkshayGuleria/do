@@ -17,7 +17,7 @@ shared_examples_for 'supporting Class' do
     describe 'with manual typecasting' do
 
       before do
-        @command = @connection.create_command("SELECT whitepaper_text FROM widgets WHERE ad_description = ?")
+        @command = @connection.create_command("SELECT class_name FROM widgets WHERE ad_description = ?")
         @command.set_types(Class)
         @reader = @command.execute_reader('Buy this product now!')
         @reader.next!
@@ -43,7 +43,7 @@ shared_examples_for 'supporting Class' do
   describe 'writing a Class' do
 
     before do
-      @reader = @connection.create_command("SELECT whitepaper_text FROM widgets WHERE whitepaper_text = ?").execute_reader(String)
+      @reader = @connection.create_command("SELECT class_name FROM widgets WHERE class_name = ?").execute_reader(String)
       @reader.next!
       @values = @reader.values
     end

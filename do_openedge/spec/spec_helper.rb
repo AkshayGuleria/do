@@ -174,9 +174,12 @@ module DataObjectsSpecHelpers
         shelf_location,
         description,
         ad_description,
+        class_name,
         super_number,
-        weight)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+        weight,
+        release_datetime,
+        release_timestamp)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     EOF
 
     1.upto(16) do |n|
@@ -186,8 +189,30 @@ module DataObjectsSpecHelpers
         'A14',
         'This is a description',
         'Buy this product now!',
+        'String',
         1234,
-        13.4)
+        13.4,
+        Time.local(2008,2,14,0,31,12),
+        Time.local(2008,2,14,0,31,12))
+    end
+
+    # These updates are done separately from the initial inserts because the
+    # BLOB/CLOB fields seem to stop the before insert trigger from running!
+    1.upto(16) do |i|
+      command = conn.create_command(<<-EOF)
+        update widgets set
+        image_data = ?,
+        ad_image = ?,
+        whitepaper_text = ?,
+        cad_drawing = ?
+        where id = #{i}
+      EOF
+      command.execute_non_query(
+        ::Extlib::ByteArray.new('IMAGE DATA'),
+        ::Extlib::ByteArray.new('AD IMAGE DATA'),
+        '1234567890'*500,
+        ::Extlib::ByteArray.new("CAD \001 \000 DRAWING")
+      )
     end
 
     conn.create_command(<<-EOF).execute_non_query

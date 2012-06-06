@@ -106,33 +106,6 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
 
     /**
      *
-     * TODO
-     *
-     * @param runtime
-     * @param rs
-     * @param col
-     * @param type
-     * @return
-     * @throws SQLException
-     * @throws IOException
-     */
-    @Override
-    public IRubyObject getTypecastResultSetValue(Ruby runtime,
-            ResultSet rs, int col, RubyType type) throws SQLException,
-            IOException {
-        switch (type) {
-        case BYTE_ARRAY:
-            // TODO: How to convert this?
-            System.out.println("* " + rs.getMetaData().getColumnTypeName(col) + " = " + type.toString());
-            return runtime.getNil();
-        default:
-            return super.getTypecastResultSetValue(runtime, rs, col, type);
-        }
-    }
-
-    /**
-     *
-     * TODO
      *
      * @return
      */
@@ -164,12 +137,7 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
 
     /**
      *
-     * This is needed to translate OpenEdge's non-JDBC style URIs, which look like this:
-     * jdbc:datadirect:openedge://host:port;databaseName=db_name;defaultSchema=schema_name;statementCacheSize=Cachesize
-     * into actual JDBC-style URIs of the form
-     * jdbc:datadirect:openedge://host:port/db_name?defaultSchema=schema_name&statementCacheSize=Cachesize
-     * Note that DataObjects-style URIs also come through this method, which take the form of
-     * scheme://user:password@host:port/path#fragment
+     * This is needed to translate OpenEdge's funky JDBC URI
      *
      * @param connection_uri
      * @return
@@ -227,8 +195,8 @@ public class OpenEdgeDriverDefinition extends AbstractDriverDefinition {
 
     /**
      *
-     * This is needed to translate from the JDBC-style URI into the proprietary
-     * mess that OpenEdge requires (see parseConnectionURI for opposite conversion)
+     * This is needed to translate from the normal JDBC-style URI into the
+     * proprietary mess that OpenEdge requires
      *
      * @param connectionUri
      * @return
