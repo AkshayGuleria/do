@@ -65,6 +65,10 @@ module DataObjectsSpecHelpers
     EOF
 
     conn.create_command(<<-EOF).execute_non_query
+      DROP TABLE IF EXISTS "pdfs"
+    EOF
+
+    conn.create_command(<<-EOF).execute_non_query
       CREATE TABLE "users" (
         "id" SERIAL,
         "name" VARCHAR(200) default 'Billy' NULL,
@@ -106,9 +110,27 @@ module DataObjectsSpecHelpers
       );
     EOF
 
+    conn.create_command(<<-EOF).execute_non_query
+      CREATE TABLE "pdfs" (
+        "id" SERIAL,
+        "size" integer,
+        "sha256" varchar(64),
+        "data" bytea NULL,
+        PRIMARY KEY  ("id")
+      );
+    EOF
+
     1.upto(16) do |n|
       conn.create_command(<<-EOF).execute_non_query(::Extlib::ByteArray.new("CAD \001 \000 DRAWING"))
         insert into widgets(code, name, shelf_location, description, image_data, ad_description, ad_image, whitepaper_text, cad_drawing, super_number, weight) VALUES ('W#{n.to_s.rjust(7,"0")}', 'Widget #{n}', 'A14', 'This is a description', 'IMAGE DATA', 'Buy this product now!', 'AD IMAGE DATA', 'String', ?, 1234, 13.4)
+      EOF
+    end
+
+    pdf_dir = File.expand_path('../pdfs', __FILE__)
+    Dir.glob("#{pdf_dir}/*.pdf") do |pdf_file|
+      data = File.open(pdf_file, "rb"){|f| f.read}
+      conn.create_command(<<-EOF).execute_non_query(data.size, Digest::SHA256.new.hexdigest(data), ::Extlib::ByteArray.new(data))
+        insert into pdfs(size, sha256, data) VALUES (?, ?, ?)
       EOF
     end
 
