@@ -69,6 +69,10 @@ module DataObjectsSpecHelpers
     EOF
 
     conn.create_command(<<-EOF).execute_non_query
+      DROP DOMAIN IF EXISTS "ImageT"
+    EOF
+
+    conn.create_command(<<-EOF).execute_non_query
       CREATE TABLE "users" (
         "id" SERIAL,
         "name" VARCHAR(200) default 'Billy' NULL,
@@ -111,11 +115,16 @@ module DataObjectsSpecHelpers
     EOF
 
     conn.create_command(<<-EOF).execute_non_query
+      CREATE DOMAIN "ImageT" AS bytea;
+    EOF
+
+    conn.create_command(<<-EOF).execute_non_query
       CREATE TABLE "pdfs" (
         "id" SERIAL,
         "size" integer,
         "sha256" varchar(64),
-        "data" bytea NULL,
+        "data" bytea NOT NULL,
+        "data_custom_type" "ImageT" NOT NULL,
         PRIMARY KEY  ("id")
       );
     EOF
@@ -129,8 +138,8 @@ module DataObjectsSpecHelpers
     pdf_dir = File.expand_path('../pdfs', __FILE__)
     Dir.glob("#{pdf_dir}/*.pdf") do |pdf_file|
       data = File.open(pdf_file, "rb"){|f| f.read}
-      conn.create_command(<<-EOF).execute_non_query(data.size, Digest::SHA256.new.hexdigest(data), ::Extlib::ByteArray.new(data))
-        insert into pdfs(size, sha256, data) VALUES (?, ?, ?)
+      conn.create_command(<<-EOF).execute_non_query(data.size, Digest::SHA256.new.hexdigest(data), ::Extlib::ByteArray.new(data), ::Extlib::ByteArray.new(data))
+        insert into pdfs(size, sha256, data, data_custom_type) VALUES (?, ?, ?, ?)
       EOF
     end
 

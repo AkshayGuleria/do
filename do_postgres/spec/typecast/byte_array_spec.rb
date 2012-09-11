@@ -10,10 +10,10 @@ describe 'DataObjects::Postgres with ByteArray' do
 
     before do
       @connection = DataObjects::Connection.new(CONFIG.uri)
-      @reader = @connection.create_command("SELECT size, sha256, data FROM pdfs WHERE id = ?").execute_reader(1)
+      @reader = @connection.create_command("SELECT size, sha256, data, data_custom_type FROM pdfs WHERE id = ?").execute_reader(1)
       @reader.next!
       @values = @reader.values
-      @size, @sha256, @data = @values
+      @size, @sha256, @data, @data_custom_type = @values
     end
 
     after do
@@ -21,13 +21,24 @@ describe 'DataObjects::Postgres with ByteArray' do
       @connection.close
     end
 
-    it 'should return the right size' do
-      @size.should == @data.size
+    describe 'regular bytea column' do
+      it 'should return the right size' do
+        @size.should == @data.size
+      end
+
+      it 'should return the correct data' do
+        @sha256.should == Digest::SHA256.new.hexdigest(@data)
+      end
     end
 
-    it 'should return the correct data' do
-      @sha256.should == Digest::SHA256.new.hexdigest(@data)
-    end
+    describe 'custom type (ImageT)' do
+      it 'should return the right size' do
+        @size.should == @data_custom_type.size
+      end
 
+      it 'should return the correct data' do
+        @sha256.should == Digest::SHA256.new.hexdigest(@data_custom_type)
+      end
+    end
   end
 end
